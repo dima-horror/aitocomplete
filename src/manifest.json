@@ -1,16 +1,27 @@
 {
-  "name": "Chrome Extension Webpack",
-  "options_page": "options.html",
-  "background": {
-    "page": "background.html"
-  },
-  "browser_action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon-34.png"
+  "name": "AI textarea autocomplete Chrome Extension",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "/popup.html",
+    "default_title": "Open"
   },
   "icons": {
-    "128": "icon-128.png"
+    "48": "/img/icon48.png",
+    "128": "/img/icon128.png"
   },
-  "manifest_version": 2,
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "options_page": "/settings.html",
+  "background": {
+    "service_worker": "background-wrapper.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["content.bundle.js"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "permissions": ["scripting", "storage"]
 }

@@ -1,0 +1,25 @@
+.aitocomplete {
+    position: relative;
+}
+.aitocomplete-hidden-area {
+    background: transparent;
+    position: relative;
+
+    &::placeholder {
+        color: transparent;
+    }
+}
+.aitocomplete-mirror {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+.aitocomplete-pre-cursor {
+    color: transparent;
+}
+.aitocomplete-post-cursor {
+    opacity: 0.4;
+}
