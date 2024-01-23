@@ -1,36 +1,11 @@
 import "./css/inject.scss";
 import getContext from "./services/context-getter";
 import siteDetermination from "./services/site-determination";
-import { BindTextArea, UnbindTextArea } from "./services/textarea-suggest";
+import { InputWrap } from "./elements/input-wrap";
+import { Popup } from "./elements/popup";
 import { GetSuggestion } from "./services/open-ai";
 import optionsGetter from "./services/options-getter";
-
-const Autocomplete = (target, site, options) => {
-    let chat = getContext(target, site);
-    let currentInput = target.value.trim();
-    
-    if (target.aiUpdateSuggestion 
-        && currentInput !== target.aiLastInput
-        && !target.aiSuggestionSelected
-        ) 
-    {
-        target.aiLastInput = currentInput;
-        GetSuggestion(chat, currentInput, options).then((suggestion) => {
-            if (suggestion)
-                target.aiUpdateSuggestion(suggestion);
-            else 
-                target.aiRemoveSuggestion();
-        });
-    }
-}
-let delayTimer = undefined;
-const AutocompleteWithDelay = (target, site, options) => {
-    target.aiRemoveSuggestion && target.aiRemoveSuggestion();
-    delayTimer && clearTimeout(delayTimer);
-    delayTimer = setTimeout(() => {
-        Autocomplete(target, site, options);
-    }, 3000);
-}
+import { Input } from "./services/input-helper";
 
 
 var onLoaded = function(options) {
@@ -47,30 +22,54 @@ var onLoaded = function(options) {
         return;
     }
     
-    var site = siteDetermination();
+    const popup = Popup();
+    popup.bind();
+
+    const site = siteDetermination();
+    let lastInput = null;
+
+    
+    const LookupForSuggestions = () => {
+        let chat = getContext(lastInput, site);
+        let currentInput = lastInput.GetValue().trim();
+        popup.startLoading()
+        GetSuggestion(chat, currentInput, options).then((suggestion) => {
+            popup.stopLoading();
+            if (suggestion)
+                popup.updateSuggestions(suggestion, lastInput);
+            else 
+                popup.updateBodyText('No suggestions found');
+        });
+    }
+
     // Add event listener for focus on any text area
     document.body.addEventListener('focus', function(event){
-        if (event.target.tagName === 'TEXTAREA') {
-            BindTextArea(event.target);
-            AutocompleteWithDelay(event.target, site, options);
-            if (event.target.aiLastSuggestion){
-                event.target.aiUpdateSuggestion(event.target.aiLastSuggestion);
-            }
+        const input = Input(event.target);
+        if (input.IsApplied()) {
+            lastInput = input;
+            event.target.aiwrap = InputWrap(input, popup, () => {
+                LookupForSuggestions();
+            });        
+            event.target.aiwrap.bind();
         }
     }, true); 
     document.body.addEventListener('blur', function(event){
-        if (event.target.tagName === 'TEXTAREA') {
-            UnbindTextArea(event.target);
+        const input = Input(event.target);
+        if (input.IsApplied()) {
+            setTimeout(() => {
+                event.target.aiwrap && event.target.aiwrap.unbind();    
+            }, 100);
         }
     }, true); 
     
-    document.body.addEventListener('input', function(event){
-        if (event.target.tagName === 'TEXTAREA') {
-            if (event.target.value.trim() === '') delete event.target.aiSuggestionSelected;
-            AutocompleteWithDelay(event.target, site, options);
+
+    document.body.addEventListener('keydown', function(event){
+        const input = Input(event.target);
+        if (input.IsApplied() && event.key === 'F4') {
+            popup.show();
+            LookupForSuggestions();
         }
     }, true); 
-    
 }
 
 if (document.readyState !== 'loading' ) {

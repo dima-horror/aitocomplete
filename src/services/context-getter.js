@@ -1,6 +1,6 @@
 import SiteTypes from "./SiteTypes";
 
-const gitLabSiteContextGetter = (target) => {
+const gitLabSiteContextGetter = (input) => {
     
     const userNameSelector = document.querySelector('[data-testid="user-profile-link"] .gl-word-break-all');
     const currentUsername = userNameSelector.textContent;
@@ -23,9 +23,9 @@ const gitLabSiteContextGetter = (target) => {
         content: `Issue title: ${title} \n Issue description: ${description}`
     });
     
-    if (target.closest(".notes") !== null) {
+    if (input.element.closest(".notes") !== null) {
         
-        const notes = target.closest(".notes");
+        const notes = input.element.closest(".notes");
         const noteElements = notes.querySelectorAll(".note");
         noteElements.forEach((noteElement) => {
             const author = noteElement.querySelector('.author-username-link').textContent?.trim();
@@ -40,9 +40,9 @@ const gitLabSiteContextGetter = (target) => {
     return chat;
 };
 
-export default function(target, siteType) {
+export default function(input, siteType) {
     switch (siteType) {
         case SiteTypes.GITLAB:
-            return gitLabSiteContextGetter(target);
+            return gitLabSiteContextGetter(input);
     }
 };

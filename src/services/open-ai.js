@@ -99,7 +99,7 @@ const GetSuggestion = async function(chat, currentInput, options) {
     try {
         const response = await makeOpenAICall(request, options);
         console.log('OpenAI API response:', response);
-        return response.replace(/['`"]/g, '');
+        return response;
     } catch (error) {
         console.error('Error:', error);
     }
